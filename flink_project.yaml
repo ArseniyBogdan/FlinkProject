@@ -1,0 +1,22 @@
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: flink-job
+spec:
+  image: arseniybogdan/flink-job-third:1.0.3
+  flinkVersion: v1_20
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "2"
+  serviceAccount: flink
+  jobManager:
+    resource:
+      memory: "1048m"
+      cpu: 1
+  taskManager:
+    resource:
+      memory: "1048m"
+      cpu: 1
+  job:
+    jarURI: local:///opt/flink/usrlib/my-flink-job.jar
+    parallelism: 1
+    upgradeMode: stateless
