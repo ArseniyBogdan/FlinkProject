@@ -1,4 +1,4 @@
-FROM flink:1.18
+FROM flink:1.20
 
 # Устанавливаем рабочую директорию
 WORKDIR /opt/flink
