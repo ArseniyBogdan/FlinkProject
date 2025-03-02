@@ -1,5 +1,27 @@
+import com.github.jengelman.gradle.plugins.shadow.transformers.PropertiesFileTransformer
+
 plugins {
     id("java")
+    id("application")
+    id("org.springframework.boot") version "2.7.7"
+    id("io.spring.dependency-management") version "1.0.15.RELEASE"
+    id("com.gradleup.shadow") version "8.3.6"
+    id("jacoco")
+    id("pmd")
+}
+
+val jarBaseName = "flink_project"
+group = "ru.flproject"
+version = "1.0"
+
+val flinkVersion = "1.20.1"
+val jacksonVersion = "2.14.1"
+val awaitilityVersion = "4.2.0"
+
+configurations {
+    all {
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+    }
 }
 
 java {
@@ -7,23 +29,41 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
-val jarBaseName = "flink_project"
-group = "ru.flproject"
-version = "1.0"
-
 repositories {
     mavenCentral()
 }
 
 dependencies {
 
-    implementation("org.apache.flink:flink-java:1.20.1")
-    implementation("org.apache.flink:flink-streaming-java:1.20.1")
-    implementation("org.apache.flink:flink-connector-datagen:1.20.1")
-    implementation("org.apache.flink:flink-connector-base:1.20.1")
-    implementation("org.apache.flink:flink-clients:1.20.1")
-    implementation("org.slf4j:slf4j-log4j12:2.0.7")
-    implementation("log4j:log4j:1.2.17")
+    implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}")
+    implementation("com.fasterxml.jackson.core:jackson-core:${jacksonVersion}")
+    implementation("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${jacksonVersion}")
+
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    annotationProcessor("org.projectlombok:lombok")
+    compileOnly ("org.projectlombok:lombok")
+
+    implementation ("org.apache.flink:flink-java:${flinkVersion}")
+    implementation ("org.apache.flink:flink-streaming-java:${flinkVersion}")
+    implementation ("org.apache.flink:flink-connector-datagen:${flinkVersion}")
+    implementation ("org.apache.flink:flink-connector-base:${flinkVersion}")
+    implementation ("org.apache.flink:flink-clients:${flinkVersion}")
+
+    testImplementation ("ch.qos.logback:logback-classic:1.4.12")
+    testImplementation ("org.springframework.boot:spring-boot-starter-test")
+    testImplementation ("org.apache.flink:flink-streaming-java:${flinkVersion}:tests")
+    testImplementation ("org.apache.flink:flink-test-utils:${flinkVersion}")
+    testImplementation ("org.apache.flink:flink-statebackend-rocksdb:${flinkVersion}")
+    testImplementation ("org.testcontainers:junit-jupiter:1.18.0")
+    testImplementation ("org.awaitility:awaitility:${awaitilityVersion}")
+    testImplementation ("commons-io:commons-io:2.14.0")
+
+    testAnnotationProcessor ("org.projectlombok:lombok")
+    testCompileOnly ("org.projectlombok:lombok")
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -37,12 +77,21 @@ tasks.withType<Jar> {
     archiveBaseName.set(jarBaseName)
 }
 
-tasks.register("fatJar", type = Jar::class) {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+application.mainClass = "ru.flproject.Main"
+
+tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
+    dependsOn("check")
+    isZip64 = true
+    mergeServiceFiles()
+    archiveClassifier.set("")
+    append("META-INF/spring.handlers")
+    append("META-INF/spring.schemas")
+    append("META-INF/spring.tooling")
+    transform(PropertiesFileTransformer::class.java) {
+        paths = listOf("META-INF/spring.factories")
+        mergeStrategy = "append"
+    }
     manifest {
-        attributes["Implementation-Title"] = "Gradle Jar File"
         attributes["Main-Class"] = "ru.flproject.Main"
     }
-    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
-    with(tasks.jar.get())
 }
