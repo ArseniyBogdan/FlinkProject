@@ -8,10 +8,12 @@ import org.apache.flink.connector.datagen.source.GeneratorFunction;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.PrintSink;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import ru.flproject.job.FlinkJob;
 
 @Component
+@ConditionalOnProperty("jobs.simple-job.enabled")
 public class SimpleJob extends FlinkJob {
 
     @Override

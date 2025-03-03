@@ -7,7 +7,6 @@ plugins {
     id("io.spring.dependency-management") version "1.0.15.RELEASE"
     id("com.gradleup.shadow") version "8.3.6"
     id("jacoco")
-    id("pmd")
 }
 
 val jarBaseName = "flink_project"
@@ -17,6 +16,7 @@ version = "1.0"
 val flinkVersion = "1.20.1"
 val jacksonVersion = "2.14.1"
 val awaitilityVersion = "4.2.0"
+val flinkKafkaConnectorVersion = "3.4.0-1.20"
 
 configurations {
     all {
@@ -51,6 +51,7 @@ dependencies {
     implementation ("org.apache.flink:flink-streaming-java:${flinkVersion}")
     implementation ("org.apache.flink:flink-connector-datagen:${flinkVersion}")
     implementation ("org.apache.flink:flink-connector-base:${flinkVersion}")
+    implementation ("org.apache.flink:flink-connector-kafka:${flinkKafkaConnectorVersion}")
     implementation ("org.apache.flink:flink-clients:${flinkVersion}")
 
     testImplementation ("ch.qos.logback:logback-classic:1.4.12")
