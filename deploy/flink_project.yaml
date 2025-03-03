@@ -3,7 +3,7 @@ kind: FlinkDeployment
 metadata:
   name: flink-job
 spec:
-  image: arseniybogdan/flink-job-third:1.1.3
+  image: arseniybogdan/flink-job-third:1.1.10
   flinkVersion: v1_20
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "2"
