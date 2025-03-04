@@ -7,14 +7,16 @@ jobs:
     enabled: false
   kafka-data-gen-job:
     enabled: true
+  kafka-deduplication-job:
+    enabled: true
     operators:
       deduplicator:
         ttl:
-          app: 7d
+          app: 30s
 
 kafka:
   group-id: group_id
   bootstrap-servers: kafka-service.kafka.svc.cluster.local:9092
   topics:
     publication-topic: "publication-topic"
-
+    deduplicated-publication-topic: "deduplicated-publication-topic"

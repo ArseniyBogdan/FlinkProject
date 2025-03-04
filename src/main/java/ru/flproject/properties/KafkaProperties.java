@@ -27,5 +27,7 @@ public class KafkaProperties {
     public static class Topics {
         @NotEmpty(message = "Publication Topic cannot be null or empty")
         private final String publicationTopic;
+        @NotEmpty(message = "Deduplicated publication topic cannot be null or empty")
+        private final String deduplicatedPublicationTopic;
     }
 }

@@ -1,9 +1,7 @@
 package ru.flproject.job.impl;
 
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
-import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.connector.source.util.ratelimit.RateLimiterStrategy;
 import org.apache.flink.connector.datagen.source.DataGeneratorSource;
@@ -15,6 +13,7 @@ import org.springframework.stereotype.Component;
 import ru.flproject.job.FlinkJob;
 import ru.flproject.schema.Category;
 import ru.flproject.schema.Publication;
+import ru.flproject.sink.PublicationKafkaSinkProvider;
 import ru.flproject.sink.SinkProvider;
 
 import java.sql.Timestamp;
@@ -26,7 +25,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @ConditionalOnProperty("jobs.kafka-data-gen-job.enabled")
 public class KafkaDataGenJob extends FlinkJob {
-    private final SinkProvider<Publication> sinkProvider;
+    private final PublicationKafkaSinkProvider sinkProvider;
 
     @Override
     public void registerJob(StreamExecutionEnvironment env) {
