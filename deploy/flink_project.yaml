@@ -1,13 +1,71 @@
+#apiVersion: flink.apache.org/v1beta1
+#kind: FlinkDeployment
+#metadata:
+#  name: flink-job
+#spec:
+#  flinkVersion: v1_20
+#  image: arseniybogdan/flink-job:1.0.0
+#  flinkConfiguration:
+#    taskmanager.numberOfTaskSlots: "2"
+#    s3.endpoint: http://minio:9000
+#    s3.path.style.access: "true"
+#    s3.access-key: access-key
+#    s3.secret-key: secret-key
+#  serviceAccount: flink
+#  jobManager:
+#    resource:
+#      memory: "1048m"
+#      cpu: 1
+#  taskManager:
+#    resource:
+#      memory: "1048m"
+#      cpu: 1
+#  job:
+#    jarURI: s3://jobs/flink_project-1.0.jar
+#    parallelism: 1
+#    upgradeMode: stateless
+
 apiVersion: flink.apache.org/v1beta1
 kind: FlinkDeployment
 metadata:
   name: flink-job
 spec:
-  image: arseniybogdan/flink-job-third:1.1.10
+  image: flink:1.20
   flinkVersion: v1_20
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "2"
   serviceAccount: flink
+  podTemplate:
+    apiVersion: v1
+    kind: Pod
+    spec:
+      initContainers:
+        - name: download-jar
+          image: amazon/aws-cli
+          command: ["sh", "-c", "aws s3 cp s3://jobs/flink_project-1.0.jar /flink-data/flink_project-1.0.jar --endpoint-url http://minio:9000"]
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: accessKey
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: secretKey
+          volumeMounts:
+            - name: flink-data
+              mountPath: /flink-data
+      containers:
+        - name: flink-main-container
+          image: flink:1.20
+          volumeMounts:
+            - name: flink-data
+              mountPath: /flink-data
+      volumes:
+        - name: flink-data
+          emptyDir: {}
   jobManager:
     resource:
       memory: "1048m"
@@ -17,6 +75,6 @@ spec:
       memory: "1048m"
       cpu: 1
   job:
-    jarURI: local:///opt/flink/usrlib/my-flink-job.jar
+    jarURI: local:///flink-data/flink_project-1.0.jar
     parallelism: 1
     upgradeMode: stateless

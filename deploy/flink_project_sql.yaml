@@ -1,0 +1,110 @@
+#apiVersion: flink.apache.org/v1beta1
+#kind: FlinkDeployment
+#metadata:
+#  name: flink-job-sql
+#spec:
+#  image: arseniybogdan/flink-sql-runner:1.0.1
+#  flinkVersion: v1_20
+#  flinkConfiguration:
+#    taskmanager.numberOfTaskSlots: "2"
+#  serviceAccount: flink
+#  podTemplate:
+#    apiVersion: v1
+#    kind: Pod
+#    spec:
+#      initContainers:
+#        - name: download-sql-script
+#          image: amazon/aws-cli
+#          command: ["sh", "-c", "aws s3 cp s3://jobs/simple.sql /opt/flink/flink-data/sql_script.sql --endpoint-url http://minio:9000"]
+#          env:
+#            - name: AWS_ACCESS_KEY_ID
+#              valueFrom:
+#                secretKeyRef:
+#                  name: minio-secret
+#                  key: accessKey
+#            - name: AWS_SECRET_ACCESS_KEY
+#              valueFrom:
+#                secretKeyRef:
+#                  name: minio-secret
+#                  key: secretKey
+#          volumeMounts:
+#            - name: flink-data
+#              mountPath: /opt/flink/flink-data
+#      containers:
+#        - name: flink-main-container
+#          image: arseniybogdan/flink-sql-runner:1.0.1
+#          volumeMounts:
+#            - name: flink-data
+#              mountPath: /opt/flink/flink-data
+#      volumes:
+#        - name: flink-data
+#          emptyDir: {}
+#  jobManager:
+#    resource:
+#      memory: "1048m"
+#      cpu: 1
+#  taskManager:
+#    resource:
+#      memory: "1048m"
+#      cpu: 1
+#  job:
+#    jarURI: local:///opt/flink/usrlib/sql-runner.jar
+#    args: ["/opt/flink/flink-data/sql_script.sql"]
+#    parallelism: 1
+#    upgradeMode: stateless
+
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: flink-job-sql
+spec:
+  image: flink:1.20
+  flinkVersion: v1_20
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "2"
+  serviceAccount: flink
+  podTemplate:
+    apiVersion: v1
+    kind: Pod
+    spec:
+      initContainers:
+        - name: download-sql-script
+          image: amazon/aws-cli
+          command: ["sh", "-c", "aws s3 cp s3://jobs/simple.sql /opt/flink/flink-data/sql_script.sql --endpoint-url http://minio:9000; 
+                    aws s3 cp s3://jobs/flink-sql-runner.jar /opt/flink/flink-data/sql_runner.jar --endpoint-url http://minio:9000"]
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: accessKey
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: secretKey
+          volumeMounts:
+            - name: flink-data
+              mountPath: /opt/flink/flink-data
+      containers:
+        - name: flink-main-container
+          image: flink:1.20
+          volumeMounts:
+            - name: flink-data
+              mountPath: /opt/flink/flink-data
+      volumes:
+        - name: flink-data
+          emptyDir: {}
+  jobManager:
+    resource:
+      memory: "1048m"
+      cpu: 1
+  taskManager:
+    resource:
+      memory: "1048m"
+      cpu: 1
+  job:
+    jarURI: local:///opt/flink/flink-data/sql_runner.jar
+    args: ["/opt/flink/flink-data/sql_script.sql"]
+    parallelism: 1
+    upgradeMode: stateless

@@ -1,10 +1,4 @@
 FROM flink:1.20
 
-# Устанавливаем рабочую директорию
-WORKDIR /opt/flink
-
-ARG JAR_FILE=.//build/libs/flink_project-1.0.jar
-ARG JAVA_OPTS="-Xmx256m -Xms256m"
-
-# Копируем JAR-файл в контейнер
-COPY ${JAR_FILE} /opt/flink/usrlib/my-flink-job.jar
+RUN mkdir -p ./plugins/s3-fs-hadoop
+RUN cp ./opt/flink-s3-fs-hadoop-1.20.1.jar ./plugins/s3-fs-hadoop/
